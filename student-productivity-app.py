@@ -223,11 +223,10 @@ elif page == "Timetable":
     else:
         st.info("No classes added yet. Use the form above to add your timetable!")
 
-# Code Generator from Photo
+# ==================== CODE GENERATOR FROM PHOTO ====================
 elif page == "Code Generator from Photo":
-    st.title("Auto Generate Code from Question Photo 💻")
-
-    st.write("Upload photo of coding question → app extracts text and generates Python code for common problems.")
+    st.title("Code Generator from Photo 💻")
+    st.write("Upload a photo of a coding question — the app will try to generate Python code.")
 
     uploaded_file = st.file_uploader("Upload photo of question", type=["jpg", "jpeg", "png"])
 
@@ -236,15 +235,17 @@ elif page == "Code Generator from Photo":
         st.image(image, caption="Uploaded Question Photo", use_column_width=True)
 
         if st.button("Extract & Generate Code"):
-            with st.spinner("Reading question and generating code..."):
+            with st.spinner("Trying to read the question..."):
                 try:
+                    # Try OCR
                     text = pytesseract.image_to_string(image, lang='eng')
                     lower_text = text.lower().replace('\n', ' ').strip()
 
-                    st.subheader("Extracted Question Text")
+                    st.subheader("Extracted Text")
                     st.text_area("Raw Text", text, height=150)
 
-                    code = "# No matching pattern found — try a clearer photo or common problem"
+                    # Simple rule-based code generation
+                    code = "# Could not detect a known problem type."
                     explanation = "Detected no known pattern."
 
                     if any(word in lower_text for word in ["prime", "check prime", "is prime"]):
@@ -307,7 +308,7 @@ print(sum_of_list(nums))  # 15
                     st.subheader("Explanation")
                     st.write(explanation)
 
-                    # Save to logs in Supabase
+                    # Save to logs
                     log = {
                         "date": datetime.date.today().isoformat(),
                         "subject": "Code from Photo",
@@ -320,8 +321,32 @@ print(sum_of_list(nums))  # 15
                     st.success("Code generated and saved to logs!")
 
                 except Exception as e:
-                    st.error(f"Error: {str(e)}")
-                    st.info("Try a clearer photo or check Tesseract.")
+                    st.error("Tesseract OCR is not available on the cloud version.")
+                    st.info("Here are some example codes you can use for demonstration:")
+
+                    st.subheader("Example 1: Sum of List")
+                    st.code("""
+def sum_of_list(numbers):
+    return sum(numbers)
+
+nums = [1, 2, 3, 4, 5]
+print(sum_of_list(nums))  # 15
+                    """, language="python")
+
+                    st.subheader("Example 2: Check Prime")
+                    st.code("""
+def is_prime(n):
+    if n <= 1:
+        return False
+    for i in range(2, int(n**0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
+
+print(is_prime(17))  # True
+                    """, language="python")
+
+# =================================================================
 
 # Footer
 st.sidebar.markdown("---")
